@@ -4,13 +4,18 @@
 
 import React from 'react';
 import { StatusBar } from 'expo-status-bar';
-import { Provider as PaperProvider } from 'react-native-paper';
+import { Provider as PaperProvider, MD3LightTheme } from 'react-native-paper';
+import { useFonts, Poppins_400Regular, Poppins_600SemiBold, Poppins_700Bold } from '@expo-google-fonts/poppins';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { AppNavigator } from './src/navigation/AppNavigator';
 
-// Thème moderne et élégant pour React Native Paper
+// Polices chargées avec useFonts (utilisées dans les composants/Styles)
+
+// Thème moderne et élégant pour React Native Paper (basé sur MD3)
 const theme = {
+  ...MD3LightTheme,
   colors: {
+    ...MD3LightTheme.colors,
     // Palette principale - Bleu moderne avec dégradés
     primary: '#6366F1', // Indigo moderne
     primaryContainer: '#E0E7FF',
@@ -66,9 +71,17 @@ const theme = {
       level5: '#FFFFFF',
     },
   },
+  fonts: MD3LightTheme.fonts,
 };
 
 export default function App() {
+  const [fontsLoaded] = useFonts({
+    Poppins_400Regular,
+    Poppins_600SemiBold,
+    Poppins_700Bold,
+  });
+
+  if (!fontsLoaded) return null;
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <PaperProvider theme={theme}>

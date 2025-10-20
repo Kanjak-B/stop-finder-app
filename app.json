@@ -12,6 +12,9 @@
       "supportsTablet": true
     },
     "android": {},
-    "web": {}
+    "web": {},
+    "plugins": [
+      "expo-font"
+    ]
   }
 }

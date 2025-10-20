@@ -2,7 +2,7 @@
  * Écran principal de l'application StopFinder - Design moderne avec animations
  */
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import {
   StyleSheet,
   View,
@@ -11,6 +11,7 @@ import {
   RefreshControl,
   Animated,
   Dimensions,
+  Linking,
 } from 'react-native';
 import {
   Appbar,
@@ -20,6 +21,9 @@ import {
   Snackbar,
   Surface,
   Chip,
+  Portal,
+  Dialog,
+  Button,
 } from 'react-native-paper';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -31,7 +35,26 @@ import { StopCard } from '../components/StopCard';
 import { AddStopModal } from '../components/AddStopModal';
 import { EmptyState } from '../components/EmptyState';
 
-const { width } = Dimensions.get('window');
+// const { width } = Dimensions.get('window');
+
+// Ligne animée pour la FlatList (stagger + fade)
+const StopRow: React.FC<{ item: BusStop; index: number; onDelete: (id: string) => void }> = ({ item, index, onDelete }) => {
+  const translateY = useRef(new Animated.Value(20)).current;
+  const opacity = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    Animated.parallel([
+      Animated.timing(translateY, { toValue: 0, duration: 350, delay: index * 60, useNativeDriver: true }),
+      Animated.timing(opacity, { toValue: 1, duration: 350, delay: index * 60, useNativeDriver: true }),
+    ]).start();
+  }, [index]);
+
+  return (
+    <Animated.View style={{ transform: [{ translateY }], opacity }}>
+      <StopCard stop={item} onDelete={onDelete} />
+    </Animated.View>
+  );
+};
 
 export const HomeScreen: React.FC = () => {
   const [stops, setStops] = useState<BusStop[]>([]);
@@ -42,6 +65,11 @@ export const HomeScreen: React.FC = () => {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [snackbarVisible, setSnackbarVisible] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState('');
+  const [infoVisible, setInfoVisible] = useState(false);
+
+  // Animated scroll value and Animated FlatList wrapper
+  const scrollY = useRef(new Animated.Value(0)).current;
+  const AnimatedFlatList = Animated.createAnimatedComponent(FlatList) as unknown as React.ComponentType<React.ComponentProps<typeof FlatList<BusStop>>>;
 
   // Charger les arrêts au démarrage
   useEffect(() => {
@@ -148,8 +176,8 @@ export const HomeScreen: React.FC = () => {
   /**
    * Rend un élément de la liste
    */
-  const renderStopItem = ({ item }: { item: BusStop }) => (
-    <StopCard stop={item} onDelete={handleDeleteStop} />
+  const renderStopItem = ({ item, index }: { item: BusStop; index: number }) => (
+    <StopRow item={item} index={index} onDelete={handleDeleteStop} />
   );
 
   /**
@@ -172,8 +200,11 @@ export const HomeScreen: React.FC = () => {
       <Appbar.Header style={styles.header}>
         <Appbar.Content title="StopFinder" titleStyle={styles.headerTitle} />
         <Appbar.Action
-          icon="information-outline"
-          onPress={() => showSnackbar('StopFinder - Gérez vos arrêts de bus !')}
+          icon={(props) => (
+            <MaterialIcons name="info-outline" size={24} color="#FFFFFF" />
+          )}
+          onPress={() => setInfoVisible(true)}
+          accessibilityLabel="Informations concepteur"
         />
       </Appbar.Header>
 
@@ -189,13 +220,13 @@ export const HomeScreen: React.FC = () => {
               iconColor="#6366F1"
             />
             <View style={styles.searchMetaRow}>
-              <Chip selectedColor="#6366F1" style={styles.metaChip} icon={() => (
+              <Chip style={[styles.metaChip, { borderColor: '#6366F1', borderWidth: 1 }]} icon={() => (
                 <MaterialIcons name="directions-bus" size={16} color="#6366F1" />
               )}>
                 {stops.length} total
               </Chip>
               {searchQuery ? (
-                <Chip selectedColor="#0EA5E9" style={styles.metaChip} icon={() => (
+                <Chip style={[styles.metaChip, { borderColor: '#0EA5E9', borderWidth: 1 }]} icon={() => (
                   <MaterialIcons name="search" size={16} color="#0EA5E9" />
                 )}>
                   {filteredStops.length} résultat{filteredStops.length > 1 ? 's' : ''}
@@ -205,11 +236,15 @@ export const HomeScreen: React.FC = () => {
           </Surface>
         )}
 
-        <FlatList
+        <AnimatedFlatList
           data={filteredStops}
-          renderItem={renderStopItem}
-          keyExtractor={(item) => item.id}
+          renderItem={renderStopItem as any}
+          keyExtractor={(item: BusStop) => item.id}
           ListEmptyComponent={renderEmptyState}
+          onScroll={Animated.event(
+            [{ nativeEvent: { contentOffset: { y: scrollY } } }],
+            { useNativeDriver: true }
+          )}
           refreshControl={
             <RefreshControl
               refreshing={isRefreshing}
@@ -237,6 +272,34 @@ export const HomeScreen: React.FC = () => {
         label="Ajouter"
         color="#FFFFFF"
       />
+
+      {/* Dialog d'informations concepteur */}
+      <Portal>
+        <Dialog visible={infoVisible} onDismiss={() => setInfoVisible(false)} style={styles.infoDialog}>
+          <Dialog.Title style={styles.infoTitle}>À propos du concepteur</Dialog.Title>
+          <Dialog.Content>
+            <View style={styles.infoRow}>
+              <MaterialIcons name="person" size={20} color="#6366F1" />
+              <Text style={styles.infoText}>Kanjak</Text>
+            </View>
+            <View style={styles.infoRow}>
+              <MaterialIcons name="email" size={20} color="#6366F1" />
+              <Text style={styles.infoLink} onPress={() => Linking.openURL('mailto:kanjak.breniacs@gmail.com')}>
+                kanjak.breniacs@gmail.com
+              </Text>
+            </View>
+            <View style={styles.infoRow}>
+              <MaterialIcons name="language" size={20} color="#6366F1" />
+              <Text style={styles.infoLink} onPress={() => Linking.openURL('https://kanjak-b.github.io/kanjakitude/') }>
+                kanjak-b.github.io/kanjakitude/
+              </Text>
+            </View>
+          </Dialog.Content>
+          <Dialog.Actions>
+            <Button onPress={() => setInfoVisible(false)} textColor="#6366F1">Fermer</Button>
+          </Dialog.Actions>
+        </Dialog>
+      </Portal>
 
       <AddStopModal
         visible={isModalVisible}
@@ -325,5 +388,27 @@ const styles = StyleSheet.create({
   },
   snackbar: {
     backgroundColor: '#1E293B',
+  },
+  infoDialog: {
+    borderRadius: 16,
+  },
+  infoTitle: {
+    fontWeight: '700',
+  },
+  infoRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  infoText: {
+    marginLeft: 8,
+    color: '#1E293B',
+    fontSize: 16,
+  },
+  infoLink: {
+    marginLeft: 8,
+    color: '#2563EB',
+    fontSize: 16,
+    textDecorationLine: 'underline',
   },
 });

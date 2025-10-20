@@ -4,6 +4,7 @@
 
 import React from 'react';
 import { StyleSheet, View, Pressable, Animated } from 'react-native';
+import { Swipeable } from 'react-native-gesture-handler';
 import { Card, Title, Paragraph, IconButton, Chip } from 'react-native-paper';
 import { BusStop } from '../types';
 import { openGoogleMaps, formatDate } from '../utils';
@@ -31,40 +32,48 @@ export const StopCard: React.FC<StopCardProps> = ({ stop, onDelete }) => {
     Animated.spring(scale, { toValue: 1, useNativeDriver: true, speed: 50, bounciness: 6 }).start();
   };
 
+  const renderRightActions = () => (
+    <View style={styles.swipeActions}>
+      <IconButton icon="delete" iconColor="#FFFFFF" size={24} onPress={handleDelete} style={styles.swipeDelete} />
+    </View>
+  );
+
   return (
-    <Animated.View style={{ transform: [{ scale }] }}>
-      <Card style={styles.card} elevation={3}>
-        <Pressable onPress={handleOpenMaps} onPressIn={onPressIn} onPressOut={onPressOut} android_ripple={{ color: '#EEF2FF' }}>
-          <Card.Content>
-            <View style={styles.header}>
-              <Title style={styles.title}>{stop.name}</Title>
-              <Chip icon="calendar" style={styles.dateChip} selectedColor="#6366F1">
-                {formatDate(stop.createdAt)}
-              </Chip>
-            </View>
-            <Paragraph style={styles.url} numberOfLines={1}>
-              {stop.googleMapsUrl}
-            </Paragraph>
-          </Card.Content>
-        </Pressable>
-        <Card.Actions style={styles.actions}>
-          <IconButton
-            icon="map"
-            iconColor="#6366F1"
-            size={24}
-            onPress={handleOpenMaps}
-            style={styles.actionButton}
-          />
-          <IconButton
-            icon="delete"
-            iconColor="#EF4444"
-            size={24}
-            onPress={handleDelete}
-            style={styles.actionButton}
-          />
-        </Card.Actions>
-      </Card>
-    </Animated.View>
+    <Swipeable renderRightActions={renderRightActions} overshootRight={false}>
+      <Animated.View style={{ transform: [{ scale }] }}>
+        <Card style={styles.card} elevation={3}>
+          <Pressable onPress={handleOpenMaps} onPressIn={onPressIn} onPressOut={onPressOut} android_ripple={{ color: '#EEF2FF' }}>
+            <Card.Content>
+              <View style={styles.header}>
+                <Title style={styles.title}>{stop.name}</Title>
+              <Chip icon="calendar" style={[styles.dateChip, { borderColor: '#6366F1', borderWidth: 1 }]}>
+                  {formatDate(stop.createdAt)}
+                </Chip>
+              </View>
+              <Paragraph style={styles.url} numberOfLines={1}>
+                {stop.googleMapsUrl}
+              </Paragraph>
+            </Card.Content>
+          </Pressable>
+          <Card.Actions style={styles.actions}>
+            <IconButton
+              icon="map"
+              iconColor="#6366F1"
+              size={24}
+              onPress={handleOpenMaps}
+              style={styles.actionButton}
+            />
+            <IconButton
+              icon="delete"
+              iconColor="#EF4444"
+              size={24}
+              onPress={handleDelete}
+              style={styles.actionButton}
+            />
+          </Card.Actions>
+        </Card>
+      </Animated.View>
+    </Swipeable>
   );
 };
 
@@ -102,5 +111,15 @@ const styles = StyleSheet.create({
   },
   actionButton: {
     margin: 0,
+  },
+  swipeActions: {
+    justifyContent: 'center',
+    alignItems: 'flex-end',
+  },
+  swipeDelete: {
+    backgroundColor: '#EF4444',
+    borderRadius: 12,
+    marginVertical: 16,
+    marginRight: 8,
   },
 });
