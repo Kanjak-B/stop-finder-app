@@ -1,4 +1,8 @@
-# 🚌 StopFinder
+# APP NAME : 🚌 StopFinder
+# APP DEV : Kanjak
+# EMAIL : kanjak.breniacs@gmail.com
+# SITE : kanjak-b.github.io/kanjakitude
+# LICENCE MIT
 
 Une application mobile React Native élégante pour gérer vos arrêts de bus favoris. StopFinder vous permet d'enregistrer, organiser et accéder rapidement à vos arrêts de bus avec des liens Google Maps, le tout fonctionnant hors ligne.
 
