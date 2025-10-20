@@ -14,6 +14,7 @@ import {
   Title,
   HelperText,
 } from 'react-native-paper';
+import { LinearGradient } from 'expo-linear-gradient';
 import { AddStopFormData } from '../types';
 import { isValidGoogleMapsUrl } from '../utils';
 
@@ -76,8 +77,16 @@ export const AddStopModal: React.FC<AddStopModalProps> = ({
         contentContainerStyle={styles.modalContainer}
       >
         <Card style={styles.card}>
+          <LinearGradient
+            colors={["#6366F1", "#A78BFA"]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 0 }}
+            style={styles.cardHeader}
+          >
+            <Title style={styles.headerTitle}>Ajouter un arrêt</Title>
+          </LinearGradient>
           <Card.Content>
-            <Title style={styles.title}>Ajouter un arrêt</Title>
+            
             
             <View style={styles.inputContainer}>
               <TextInput
@@ -127,7 +136,7 @@ export const AddStopModal: React.FC<AddStopModalProps> = ({
                 mode="contained"
                 onPress={handleSubmit}
                 style={styles.button}
-                buttonColor="#2196F3"
+                buttonColor="#6366F1"
               >
                 Enregistrer
               </Button>
@@ -146,6 +155,18 @@ const styles = StyleSheet.create({
   card: {
     borderRadius: 16,
     backgroundColor: '#FFFFFF',
+  },
+  cardHeader: {
+    borderTopLeftRadius: 16,
+    borderTopRightRadius: 16,
+    paddingVertical: 16,
+    paddingHorizontal: 20,
+  },
+  headerTitle: {
+    color: '#FFFFFF',
+    fontSize: 18,
+    fontWeight: '700',
+    textAlign: 'center',
   },
   title: {
     textAlign: 'center',

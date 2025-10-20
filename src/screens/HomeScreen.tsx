@@ -1,5 +1,5 @@
 /**
- * Écran principal de l'application StopFinder
+ * Écran principal de l'application StopFinder - Design moderne avec animations
  */
 
 import React, { useState, useEffect, useCallback } from 'react';
@@ -9,6 +9,8 @@ import {
   FlatList,
   Alert,
   RefreshControl,
+  Animated,
+  Dimensions,
 } from 'react-native';
 import {
   Appbar,
@@ -16,14 +18,20 @@ import {
   FAB,
   Text,
   Snackbar,
+  Surface,
+  Chip,
 } from 'react-native-paper';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { LinearGradient } from 'expo-linear-gradient';
+import { MaterialIcons } from '@expo/vector-icons';
 import { BusStop, AddStopFormData } from '../types';
 import { storageService } from '../services/storageService';
 import { generateId } from '../utils';
 import { StopCard } from '../components/StopCard';
 import { AddStopModal } from '../components/AddStopModal';
 import { EmptyState } from '../components/EmptyState';
+
+const { width } = Dimensions.get('window');
 
 export const HomeScreen: React.FC = () => {
   const [stops, setStops] = useState<BusStop[]>([]);
@@ -153,23 +161,48 @@ export const HomeScreen: React.FC = () => {
 
   return (
     <SafeAreaView style={styles.container}>
+      {/* Bandeau dégradé moderne en arrière-plan */}
+      <LinearGradient
+        colors={["#6366F1", "#A78BFA", "#22D3EE"]}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={styles.gradientHeader}
+      />
+
       <Appbar.Header style={styles.header}>
         <Appbar.Content title="StopFinder" titleStyle={styles.headerTitle} />
         <Appbar.Action
-          icon="information"
+          icon="information-outline"
           onPress={() => showSnackbar('StopFinder - Gérez vos arrêts de bus !')}
         />
       </Appbar.Header>
 
       <View style={styles.content}>
         {stops.length > 0 && (
-          <Searchbar
-            placeholder="Rechercher un arrêt..."
-            onChangeText={setSearchQuery}
-            value={searchQuery}
-            style={styles.searchbar}
-            inputStyle={styles.searchInput}
-          />
+          <Surface elevation={2} style={styles.searchSurface}>
+            <Searchbar
+              placeholder="Rechercher un arrêt..."
+              onChangeText={setSearchQuery}
+              value={searchQuery}
+              style={styles.searchbar}
+              inputStyle={styles.searchInput}
+              iconColor="#6366F1"
+            />
+            <View style={styles.searchMetaRow}>
+              <Chip selectedColor="#6366F1" style={styles.metaChip} icon={() => (
+                <MaterialIcons name="directions-bus" size={16} color="#6366F1" />
+              )}>
+                {stops.length} total
+              </Chip>
+              {searchQuery ? (
+                <Chip selectedColor="#0EA5E9" style={styles.metaChip} icon={() => (
+                  <MaterialIcons name="search" size={16} color="#0EA5E9" />
+                )}>
+                  {filteredStops.length} résultat{filteredStops.length > 1 ? 's' : ''}
+                </Chip>
+              ) : null}
+            </View>
+          </Surface>
         )}
 
         <FlatList
@@ -202,6 +235,7 @@ export const HomeScreen: React.FC = () => {
         style={styles.fab}
         onPress={() => setIsModalVisible(true)}
         label="Ajouter"
+        color="#FFFFFF"
       />
 
       <AddStopModal
@@ -225,27 +259,49 @@ export const HomeScreen: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F8F9FA',
+    backgroundColor: '#F1F5F9',
+  },
+  gradientHeader: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    height: 140,
   },
   header: {
-    backgroundColor: '#2196F3',
-    elevation: 4,
+    backgroundColor: 'transparent',
+    elevation: 0,
   },
   headerTitle: {
-    fontSize: 20,
-    fontWeight: '600',
+    fontSize: 22,
+    fontWeight: '700',
     color: '#FFFFFF',
   },
   content: {
     flex: 1,
   },
+  searchSurface: {
+    marginHorizontal: 16,
+    marginTop: 12,
+    marginBottom: 8,
+    borderRadius: 16,
+    backgroundColor: 'rgba(255,255,255,0.9)',
+  },
   searchbar: {
-    margin: 16,
-    elevation: 2,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: 'transparent',
   },
   searchInput: {
     fontSize: 16,
+  },
+  searchMetaRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 12,
+    paddingBottom: 12,
+  },
+  metaChip: {
+    backgroundColor: '#EEF2FF',
+    marginRight: 8,
   },
   listContainer: {
     paddingBottom: 100, // Espace pour le FAB
@@ -254,7 +310,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     padding: 16,
     fontSize: 14,
-    color: '#7F8C8D',
+    color: '#64748B',
     backgroundColor: '#FFFFFF',
     marginHorizontal: 16,
     marginBottom: 16,
@@ -265,9 +321,9 @@ const styles = StyleSheet.create({
     margin: 16,
     right: 0,
     bottom: 0,
-    backgroundColor: '#2196F3',
+    backgroundColor: '#6366F1',
   },
   snackbar: {
-    backgroundColor: '#2C3E50',
+    backgroundColor: '#1E293B',
   },
 });

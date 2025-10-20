@@ -3,7 +3,7 @@
  */
 
 import React from 'react';
-import { StyleSheet, View } from 'react-native';
+import { StyleSheet, View, Pressable, Animated } from 'react-native';
 import { Card, Title, Paragraph, IconButton, Chip } from 'react-native-paper';
 import { BusStop } from '../types';
 import { openGoogleMaps, formatDate } from '../utils';
@@ -22,38 +22,49 @@ export const StopCard: React.FC<StopCardProps> = ({ stop, onDelete }) => {
     onDelete(stop.id);
   };
 
+  const scale = React.useRef(new Animated.Value(1)).current;
+
+  const onPressIn = () => {
+    Animated.spring(scale, { toValue: 0.98, useNativeDriver: true, speed: 50, bounciness: 6 }).start();
+  };
+  const onPressOut = () => {
+    Animated.spring(scale, { toValue: 1, useNativeDriver: true, speed: 50, bounciness: 6 }).start();
+  };
+
   return (
-    <Card style={styles.card} elevation={2}>
-      <Card.Content>
-        <View style={styles.header}>
-          <Title style={styles.title}>{stop.name}</Title>
-          <Chip icon="calendar" style={styles.dateChip}>
-            {formatDate(stop.createdAt)}
-          </Chip>
-        </View>
-        
-        <Paragraph style={styles.url} numberOfLines={1}>
-          {stop.googleMapsUrl}
-        </Paragraph>
-      </Card.Content>
-      
-      <Card.Actions style={styles.actions}>
-        <IconButton
-          icon="map"
-          iconColor="#2196F3"
-          size={24}
-          onPress={handleOpenMaps}
-          style={styles.actionButton}
-        />
-        <IconButton
-          icon="delete"
-          iconColor="#F44336"
-          size={24}
-          onPress={handleDelete}
-          style={styles.actionButton}
-        />
-      </Card.Actions>
-    </Card>
+    <Animated.View style={{ transform: [{ scale }] }}>
+      <Card style={styles.card} elevation={3}>
+        <Pressable onPress={handleOpenMaps} onPressIn={onPressIn} onPressOut={onPressOut} android_ripple={{ color: '#EEF2FF' }}>
+          <Card.Content>
+            <View style={styles.header}>
+              <Title style={styles.title}>{stop.name}</Title>
+              <Chip icon="calendar" style={styles.dateChip} selectedColor="#6366F1">
+                {formatDate(stop.createdAt)}
+              </Chip>
+            </View>
+            <Paragraph style={styles.url} numberOfLines={1}>
+              {stop.googleMapsUrl}
+            </Paragraph>
+          </Card.Content>
+        </Pressable>
+        <Card.Actions style={styles.actions}>
+          <IconButton
+            icon="map"
+            iconColor="#6366F1"
+            size={24}
+            onPress={handleOpenMaps}
+            style={styles.actionButton}
+          />
+          <IconButton
+            icon="delete"
+            iconColor="#EF4444"
+            size={24}
+            onPress={handleDelete}
+            style={styles.actionButton}
+          />
+        </Card.Actions>
+      </Card>
+    </Animated.View>
   );
 };
 
@@ -61,8 +72,9 @@ const styles = StyleSheet.create({
   card: {
     marginVertical: 8,
     marginHorizontal: 16,
-    borderRadius: 12,
+    borderRadius: 16,
     backgroundColor: '#FFFFFF',
+    overflow: 'hidden',
   },
   header: {
     flexDirection: 'row',
@@ -73,15 +85,15 @@ const styles = StyleSheet.create({
   title: {
     flex: 1,
     fontSize: 18,
-    fontWeight: '600',
-    color: '#2C3E50',
+    fontWeight: '700',
+    color: '#1E293B',
   },
   dateChip: {
-    backgroundColor: '#E3F2FD',
+    backgroundColor: '#EEF2FF',
   },
   url: {
     fontSize: 14,
-    color: '#7F8C8D',
+    color: '#64748B',
     fontStyle: 'italic',
   },
   actions: {
