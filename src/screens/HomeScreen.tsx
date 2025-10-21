@@ -204,7 +204,7 @@ export const HomeScreen: React.FC = () => {
             <MaterialIcons name="info-outline" size={24} color="#FFFFFF" />
           )}
           onPress={() => setInfoVisible(true)}
-          accessibilityLabel="Informations concepteur"
+          accessibilityLabel="Informations sur le développeur de l'application"
         />
       </Appbar.Header>
 
